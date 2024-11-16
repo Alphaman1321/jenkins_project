@@ -10,11 +10,11 @@ pipeline {
             steps {
                 script {
                     // Check if the virtual environment exists, if not, create it
-                    if (!fileExists("${env.WORKSPACE}\\${VIRTUAL_ENV}")) {
-                        bat "python -m venv ${VIRTUAL_ENV}"
+                    if (!fileExists("${env.WORKSPACE}/${VIRTUAL_ENV}")) {
+                        sh "python -m venv ${VIRTUAL_ENV}"
                     }
                     // Activate the virtual environment and install dependencies
-                    bat ".\\${VIRTUAL_ENV}\\Scripts\\activate && pip install -r requirements.txt"
+                    sh "source ${VIRTUAL_ENV}/bin/activate && pip install -r requirements.txt"
                 }
             }
         }
@@ -22,8 +22,8 @@ pipeline {
         stage('Lint') {
             steps {
                 script {
-                    // Run flake8 on the app.py file
-                    bat ".\\${VIRTUAL_ENV}\\Scripts\\activate && flake8 app.py"
+                    // Run flake8 to check code style
+                    sh "source ${VIRTUAL_ENV}/bin/activate && flake8 app.py"
                 }
             }
         }
@@ -32,7 +32,29 @@ pipeline {
             steps {
                 script {
                     // Run tests using pytest
-                    bat ".\\${VIRTUAL_ENV}\\Scripts\\activate && pytest"
+                    sh "source ${VIRTUAL_ENV}/bin/activate && pytest"
+                }
+            }
+        }
+
+        stage('Coverage') {
+            steps {
+                script {
+                    // Run coverage to collect and report test coverage data
+                    sh "source ${VIRTUAL_ENV}/bin/activate && coverage run -m pytest"
+                    // Output coverage summary
+                    sh "source ${VIRTUAL_ENV}/bin/activate && coverage report"
+                    // Generate detailed HTML coverage report
+                    sh "source ${VIRTUAL_ENV}/bin/activate && coverage html"
+                }
+            }
+        }
+
+        stage('Security Scan') {
+            steps {
+                script {
+                    // Run bandit to scan for security issues
+                    sh "source ${VIRTUAL_ENV}/bin/activate && bandit -r ."
                 }
             }
         }
@@ -40,7 +62,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Deployment logic, e.g., pushing to a remote server
+                    // Placeholder for deployment steps
                     echo "Deploying application..."
                 }
             }
