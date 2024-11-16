@@ -3,18 +3,17 @@ pipeline {
 
     environment {
         VIRTUAL_ENV = 'venv'
+        PYTHONPATH = "${env.WORKSPACE}"
     }
 
     stages {
         stage('Setup') {
             steps {
                 script {
-                    // Check if the virtual environment exists, if not, create it
-                    if (!fileExists("${env.WORKSPACE}/${VIRTUAL_ENV}")) {
-                        sh "python -m venv ${VIRTUAL_ENV}"
+                    if (!fileExists("${env.WORKSPACE}\\${VIRTUAL_ENV}")) {
+                        bat "python -m venv ${VIRTUAL_ENV}"
                     }
-                    // Activate the virtual environment and install dependencies
-                    sh "source ${VIRTUAL_ENV}/bin/activate && pip install -r requirements.txt"
+                    bat "${VIRTUAL_ENV}\\Scripts\\activate && pip install -r requirements.txt"
                 }
             }
         }
@@ -22,8 +21,7 @@ pipeline {
         stage('Lint') {
             steps {
                 script {
-                    // Run flake8 to check code style
-                    sh "source ${VIRTUAL_ENV}/bin/activate && flake8 app.py"
+                    bat "${VIRTUAL_ENV}\\Scripts\\activate && flake8 app.py"
                 }
             }
         }
@@ -31,8 +29,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    // Run tests using pytest
-                    sh "source ${VIRTUAL_ENV}/bin/activate && pytest"
+                    bat "${VIRTUAL_ENV}\\Scripts\\activate && set PYTHONPATH=${env.WORKSPACE} && pytest"
                 }
             }
         }
@@ -40,12 +37,10 @@ pipeline {
         stage('Coverage') {
             steps {
                 script {
-                    // Run coverage to collect and report test coverage data
-                    sh "source ${VIRTUAL_ENV}/bin/activate && coverage run -m pytest"
-                    // Output coverage summary
-                    sh "source ${VIRTUAL_ENV}/bin/activate && coverage report"
-                    // Generate detailed HTML coverage report
-                    sh "source ${VIRTUAL_ENV}/bin/activate && coverage html"
+                    // Run coverage analysis and generate a report
+                    bat "${VIRTUAL_ENV}\\Scripts\\activate && coverage run -m pytest"
+                    bat "${VIRTUAL_ENV}\\Scripts\\activate && coverage report"
+                    bat "${VIRTUAL_ENV}\\Scripts\\activate && coverage html"  // Generates HTML report
                 }
             }
         }
@@ -53,8 +48,8 @@ pipeline {
         stage('Security Scan') {
             steps {
                 script {
-                    // Run bandit to scan for security issues
-                    sh "source ${VIRTUAL_ENV}/bin/activate && bandit -r ."
+                    // Run Bandit security scan
+                    bat "${VIRTUAL_ENV}\\Scripts\\activate && bandit -r ."
                 }
             }
         }
@@ -62,8 +57,9 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Placeholder for deployment steps
                     echo "Deploying application..."
+                    // Placeholder for deployment logic
+                    // Add commands here to deploy to a remote server, if applicable
                 }
             }
         }
@@ -71,7 +67,6 @@ pipeline {
 
     post {
         always {
-            // Clean up the workspace after the build
             cleanWs()
         }
     }
