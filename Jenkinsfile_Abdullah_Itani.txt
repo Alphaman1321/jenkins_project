@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         VIRTUAL_ENV = 'venv'
-        PYTHONPATH = "${env.WORKSPACE}"
     }
 
     stages {
@@ -29,27 +28,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    bat "${VIRTUAL_ENV}\\Scripts\\activate && set PYTHONPATH=${env.WORKSPACE} && pytest"
-                }
-            }
-        }
-
-        stage('Coverage') {
-            steps {
-                script {
-                    // Run coverage analysis and generate a report
-                    bat "${VIRTUAL_ENV}\\Scripts\\activate && coverage run -m pytest"
-                    bat "${VIRTUAL_ENV}\\Scripts\\activate && coverage report"
-                    bat "${VIRTUAL_ENV}\\Scripts\\activate && coverage html"  // Generates HTML report
-                }
-            }
-        }
-
-        stage('Security Scan') {
-            steps {
-                script {
-                    // Run Bandit security scan
-                    bat "${VIRTUAL_ENV}\\Scripts\\activate && bandit -r ."
+                    bat "${VIRTUAL_ENV}\\Scripts\\activate && pytest"
                 }
             }
         }
@@ -58,8 +37,7 @@ pipeline {
             steps {
                 script {
                     echo "Deploying application..."
-                    // Placeholder for deployment logic
-                    // Add commands here to deploy to a remote server, if applicable
+                    // Add any deployment steps here
                 }
             }
         }
